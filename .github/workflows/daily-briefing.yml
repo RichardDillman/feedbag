@@ -1,0 +1,63 @@
+name: Daily Briefing
+
+on:
+  schedule:
+    # 6:00 AM EST (11:00 UTC)
+    - cron: '0 11 * * *'
+  workflow_dispatch: # Manual trigger for testing
+
+jobs:
+  send-briefing:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Restore seen items cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.feedbag
+          key: feedbag-seen-${{ github.run_number }}
+          restore-keys: |
+            feedbag-seen-
+      
+      - name: Generate briefing
+        run: node dist/index.js briefing --format markdown > briefing.md
+      
+      - name: Send email
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        run: |
+          SUBJECT="🍕 Feedbag - $(date +'%A, %B %d')"
+          BODY=$(cat briefing.md)
+          
+          curl -X POST 'https://api.resend.com/emails' \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d @- << EOF
+          {
+            "from": "Feedbag <feedbag@resend.dev>",
+            "to": ["$EMAIL_TO"],
+            "subject": "$SUBJECT",
+            "text": $(echo "$BODY" | jq -Rs .)
+          }
+          EOF
+      
+      - name: Save seen items cache
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.feedbag
+          key: feedbag-seen-${{ github.run_number }}
