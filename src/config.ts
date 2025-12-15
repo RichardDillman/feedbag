@@ -49,6 +49,7 @@ export const FEEDS: FeedConfig[] = [
 export const PRIORITY_TOPICS = [
   'nextjs',
   'next.js',
+  'react',
   'pagespeed',
   'core web vitals',
   'cwv',
@@ -66,6 +67,8 @@ export const INTEREST_TOPICS = [
   'claude code',
   'anthropic',
   'agentic',
+  'unit test',
+  'caniuse',
   'css',
   'eso',
   'elder scrolls',

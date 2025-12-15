@@ -15,11 +15,11 @@ function formatItem(item: FeedItem, index: number): string {
     `   Source: ${item.source}`,
     `   ${item.link}`,
   ];
-  
+
   if (item.snippet) {
     lines.push(`   > ${item.snippet.slice(0, 150)}...`);
   }
-  
+
   return lines.join('\n');
 }
 
@@ -29,21 +29,18 @@ export function formatBriefingMarkdown(
   options: { maxEssential?: number; maxProfessional?: number } = {}
 ): string {
   const { maxEssential = 5, maxProfessional = 3 } = options;
-  
+
   const essential = items.filter((i) => i.category === 'essential').slice(0, maxEssential);
   const professional = items.filter((i) => i.category === 'professional').slice(0, maxProfessional);
   const personal = items.filter((i) => i.category === 'personal').slice(0, 2);
-  
+
   // Pick one good thing - prefer personal, then professional
   const goodThing = personal[0] || professional.find((p) => !p.title.toLowerCase().includes('security'));
-  
+
   const lines: string[] = [
-    '═══════════════════════════════════════════════════════',
     `📅 ${formatDate(new Date())} BRIEFING`,
-    '═══════════════════════════════════════════════════════',
-    '',
   ];
-  
+
   // Today's Essentials
   if (essential.length > 0) {
     lines.push('## TODAY\'S ESSENTIALS', '');
@@ -54,7 +51,7 @@ export function formatBriefingMarkdown(
   } else {
     lines.push('## TODAY\'S ESSENTIALS', '', '_No new essential items today._', '', '---', '');
   }
-  
+
   // Professional Pulse
   if (professional.length > 0) {
     lines.push('## PROFESSIONAL PULSE', '');
@@ -63,7 +60,7 @@ export function formatBriefingMarkdown(
     });
     lines.push('---', '');
   }
-  
+
   // One Good Thing
   if (goodThing) {
     lines.push('## ONE GOOD THING', '');
@@ -71,7 +68,7 @@ export function formatBriefingMarkdown(
     lines.push(`${goodThing.link}`, '');
     lines.push('---', '');
   }
-  
+
   // What I'm Skipping
   if (skipped.length > 0) {
     lines.push('## SKIPPING TODAY', '');
@@ -83,9 +80,9 @@ export function formatBriefingMarkdown(
     }
     lines.push('');
   }
-  
+
   lines.push('═══════════════════════════════════════════════════════');
-  
+
   return lines.join('\n');
 }
 
@@ -112,16 +109,16 @@ export function formatBriefingPlain(items: FeedItem[], skipped: string[]): strin
     `=== FEEDBAG ${formatDate(new Date())} ===`,
     '',
   ];
-  
+
   for (const item of items.slice(0, 10)) {
     lines.push(`[${item.source}] ${item.title}`);
     lines.push(`  ${item.link}`);
     lines.push('');
   }
-  
+
   if (skipped.length > 0) {
     lines.push(`Skipped ${skipped.length} items (politics, etc.)`);
   }
-  
+
   return lines.join('\n');
 }
